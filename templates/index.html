@@ -68,8 +68,16 @@
     }
 
     async function callApi(path) {
-      await fetch(path, { method: 'POST' });
-      await Promise.all([updateStatus(), updateRecordings()]);
+      const error = document.getElementById('error');
+      try {
+        const response = await fetch(path, { method: 'POST' });
+        if (!response.ok) {
+          throw new Error(`Request failed (${response.status})`);
+        }
+        await Promise.all([updateStatus(), updateRecordings()]);
+      } catch (err) {
+        error.textContent = `Error: ${err.message}`;
+      }
     }
 
     document.getElementById('start').addEventListener('click', () => callApi('/api/start'));

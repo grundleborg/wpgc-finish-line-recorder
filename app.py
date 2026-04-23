@@ -8,7 +8,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterator
 
-from flask import Flask, Response, jsonify, render_template, send_from_directory
+from flask import Flask, Response, abort, jsonify, render_template, send_from_directory
+from werkzeug.utils import safe_join
 
 
 class RecorderController:
@@ -78,7 +79,10 @@ class RecorderController:
                     process.wait(timeout=5)
                 except subprocess.TimeoutExpired:
                     process.kill()
-                    process.wait(timeout=2)
+                    try:
+                        process.wait(timeout=2)
+                    except subprocess.TimeoutExpired:
+                        pass
 
             self._process = None
             self._current_filename = None
@@ -202,6 +206,8 @@ def create_app(test_config: dict[str, object] | None = None) -> Flask:
 
     @app.get("/api/recordings/<path:filename>")
     def download(filename: str) -> Response:
+        if safe_join(app.config["RECORDINGS_DIR"], filename) is None:
+            abort(404)
         return send_from_directory(app.config["RECORDINGS_DIR"], filename, as_attachment=True)
 
     @app.get("/preview.mjpg")

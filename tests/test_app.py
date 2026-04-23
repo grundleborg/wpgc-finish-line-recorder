@@ -77,6 +77,10 @@ class AppTests(unittest.TestCase):
         self.assertEqual(response.data, b"abc")
         response.close()
 
+    def test_download_rejects_path_traversal(self) -> None:
+        response = self.client.get("/api/recordings/../../etc/passwd")
+        self.assertEqual(response.status_code, 404)
+
 
 if __name__ == "__main__":
     unittest.main()
