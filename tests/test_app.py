@@ -55,7 +55,7 @@ class AppTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         payload = response.get_json()
         self.assertFalse(payload["started"])
-        self.assertIn("error", payload)
+        self.assertEqual(payload["error"], "ffmpeg is not available on the system")
 
     def test_recordings_endpoint_lists_files(self) -> None:
         (Path(self.tmpdir.name) / "recording-1.mkv").write_bytes(b"abc")
@@ -66,6 +66,7 @@ class AppTests(unittest.TestCase):
         payload = response.get_json()
         self.assertEqual(len(payload["recordings"]), 2)
         self.assertEqual(payload["recordings"][0]["name"], "recording-2.mkv")
+        self.assertEqual(payload["recordings"][1]["name"], "recording-1.mkv")
 
 
 if __name__ == "__main__":

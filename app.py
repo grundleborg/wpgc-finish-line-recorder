@@ -26,7 +26,7 @@ class RecorderController:
             if self._is_process_running():
                 return {"started": False, "filename": self._current_filename or ""}
 
-            timestamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
+            timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
             filename = f"recording-{timestamp}.mkv"
             output_path = self._recordings_dir / filename
 
@@ -50,8 +50,8 @@ class RecorderController:
             ]
             try:
                 self._process = subprocess.Popen(cmd)
-            except OSError as exc:
-                self._last_error = str(exc)
+            except OSError:
+                self._last_error = "ffmpeg is not available on the system"
                 return {"started": False, "filename": "", "error": self._last_error}
             self._current_filename = filename
             self._last_error = ""

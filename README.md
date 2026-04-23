@@ -27,6 +27,8 @@ CAMERA_URL="rtsp://10.20.30.11" RECORDINGS_DIR="./recordings" python3 app.py
 
 Then open `http://<pi-ip>:8080`.
 
+If `CAMERA_URL` is not set, the app defaults to `rtsp://10.20.30.11`.
+
 ## API
 
 - `GET /api/status` → current state

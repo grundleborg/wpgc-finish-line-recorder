@@ -7,6 +7,7 @@ Wants=network-online.target
 Type=simple
 User=pi
 WorkingDirectory=/opt/wpgc-finish-line-recorder
+# Customize this camera URL for deployment.
 Environment=CAMERA_URL=rtsp://10.20.30.11
 Environment=RECORDINGS_DIR=/var/lib/wpgc-recordings
 ExecStart=/usr/bin/python3 /opt/wpgc-finish-line-recorder/app.py
