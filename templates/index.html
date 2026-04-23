@@ -19,6 +19,7 @@
   <h1>WPGC Finish Line Recorder</h1>
 
   <div class="row">
+    <input id="nameSuffix" type="text" placeholder="Optional recording label" aria-label="Recording label">
     <button id="start">Start Recording</button>
     <button id="stop">Stop Recording</button>
     <span id="status" class="badge idle">Idle</span>
@@ -67,10 +68,14 @@
       });
     }
 
-    async function callApi(path) {
+    async function callApi(path, payload) {
       const error = document.getElementById('error');
       try {
-        const response = await fetch(path, { method: 'POST' });
+        const response = await fetch(path, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload || {})
+        });
         if (!response.ok) {
           throw new Error(`Request failed (${response.status})`);
         }
@@ -80,8 +85,11 @@
       }
     }
 
-    document.getElementById('start').addEventListener('click', () => callApi('/api/start'));
-    document.getElementById('stop').addEventListener('click', () => callApi('/api/stop'));
+    document.getElementById('start').addEventListener('click', () => {
+      const nameSuffix = document.getElementById('nameSuffix').value;
+      callApi('/api/start', { name_suffix: nameSuffix });
+    });
+    document.getElementById('stop').addEventListener('click', () => callApi('/api/stop', {}));
 
     setInterval(updateStatus, 2000);
     setInterval(updateRecordings, 5000);

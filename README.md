@@ -5,6 +5,7 @@ Lightweight Raspberry Pi-friendly RTSP recorder for the WPGC finish line camera.
 ## Features
 
 - Start/stop recording over a simple web UI
+- Optional recording label suffix from the web UI when starting a recording
 - Recording state API (`/api/status`)
 - Recording list/download API (`/api/recordings`)
 - Live preview in the UI (`/preview.mjpg`)
@@ -25,7 +26,7 @@ pip install -r requirements.txt
 CAMERA_URL="rtsp://10.20.30.11" RECORDINGS_DIR="./recordings" python3 app.py
 ```
 
-Then open `http://<pi-ip>:8080`.
+Then open `http://<pi-ip>:8123`.
 
 If `CAMERA_URL` is not set, the app defaults to `rtsp://10.20.30.11`.
 
@@ -33,6 +34,7 @@ If `CAMERA_URL` is not set, the app defaults to `rtsp://10.20.30.11`.
 
 - `GET /api/status` → current state
 - `POST /api/start` → start recording
+  - Optional JSON body: `{"name_suffix":"heat-1"}`
 - `POST /api/stop` → stop recording
 - `GET /api/recordings` → list files
 - `GET /api/recordings/<filename>` → download a file
@@ -43,8 +45,9 @@ If `CAMERA_URL` is not set, the app defaults to `rtsp://10.20.30.11`.
 2. Install dependencies:
    ```bash
    sudo apt update
-   sudo apt install -y python3 python3-pip ffmpeg
-   sudo python3 -m pip install -r /opt/wpgc-finish-line-recorder/requirements.txt
+   sudo apt install -y python3 python3-venv ffmpeg
+   sudo python3 -m venv /opt/wpgc-finish-line-recorder/.venv
+   sudo /opt/wpgc-finish-line-recorder/.venv/bin/pip install -r /opt/wpgc-finish-line-recorder/requirements.txt
    sudo mkdir -p /var/lib/wpgc-recordings
    sudo chown pi:pi /var/lib/wpgc-recordings
    ```
@@ -60,3 +63,18 @@ If `CAMERA_URL` is not set, the app defaults to `rtsp://10.20.30.11`.
    ```
 
 The provided service is configured with restart-on-failure for reliability.
+
+## Example USB automount for recordings directory
+
+An example pair of systemd units is included to automount a USB drive labeled `WPGC_RECORDINGS` at `/var/lib/wpgc-recordings`:
+
+- `systemd/var-lib-wpgc-recordings.automount`
+- `systemd/var-lib-wpgc-recordings.mount`
+
+Install and enable:
+
+```bash
+sudo cp /opt/wpgc-finish-line-recorder/systemd/var-lib-wpgc-recordings.* /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now var-lib-wpgc-recordings.automount
+```

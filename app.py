@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import re
 import signal
 import subprocess
 import threading
@@ -8,7 +9,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterator
 
-from flask import Flask, Response, abort, jsonify, render_template, send_from_directory
+from flask import Flask, Response, abort, jsonify, render_template, request, send_from_directory
 from werkzeug.utils import safe_join
 
 
@@ -22,13 +23,17 @@ class RecorderController:
         self._current_filename: str | None = None
         self._last_error: str = ""
 
-    def start(self) -> dict[str, str | bool]:
+    def start(self, name_suffix: str = "") -> dict[str, str | bool]:
         with self._lock:
             if self._is_process_running():
                 return {"started": False, "filename": self._current_filename or ""}
 
             timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-            filename = f"recording-{timestamp}.mkv"
+            filename = f"recording-{timestamp}"
+            safe_suffix = self._sanitize_suffix(name_suffix)
+            if safe_suffix:
+                filename = f"{filename}-{safe_suffix}"
+            filename = f"{filename}.mkv"
             output_path = self._recordings_dir / filename
 
             cmd = [
@@ -109,6 +114,11 @@ class RecorderController:
 
     def _is_process_running(self) -> bool:
         return self._process is not None and self._process.poll() is None
+
+    @staticmethod
+    def _sanitize_suffix(value: str) -> str:
+        cleaned = re.sub(r"[^A-Za-z0-9_-]+", "-", value.strip()).strip("-_")
+        return cleaned[:64]
 
 
 BOUNDARY = b"--frame\r\nContent-Type: image/jpeg\r\n\r\n"
@@ -194,7 +204,11 @@ def create_app(test_config: dict[str, object] | None = None) -> Flask:
 
     @app.post("/api/start")
     def start() -> Response:
-        return jsonify(controller.start())
+        payload = request.get_json(silent=True) or {}
+        name_suffix = payload.get("name_suffix", "") if isinstance(payload, dict) else ""
+        if not isinstance(name_suffix, str):
+            name_suffix = ""
+        return jsonify(controller.start(name_suffix=name_suffix))
 
     @app.post("/api/stop")
     def stop() -> Response:
@@ -224,4 +238,4 @@ app = create_app()
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080, threaded=True)
+    app.run(host="0.0.0.0", port=8123, threaded=True)

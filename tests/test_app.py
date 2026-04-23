@@ -49,6 +49,14 @@ class AppTests(unittest.TestCase):
         self.assertEqual(stop.status_code, 200)
         self.assertTrue(stop.get_json()["stopped"])
 
+    @patch("subprocess.Popen", return_value=DummyProcess())
+    def test_start_with_name_suffix(self, _popen) -> None:
+        response = self.client.post("/api/start", json={"name_suffix": "Heat 1"})
+        self.assertEqual(response.status_code, 200)
+        payload = response.get_json()
+        self.assertTrue(payload["started"])
+        self.assertIn("-Heat-1.mkv", payload["filename"])
+
     @patch("subprocess.Popen", side_effect=FileNotFoundError("ffmpeg not found"))
     def test_start_handles_missing_ffmpeg(self, _popen) -> None:
         response = self.client.post("/api/start")
