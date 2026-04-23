@@ -50,8 +50,11 @@ class RecorderController:
             ]
             try:
                 self._process = subprocess.Popen(cmd)
-            except OSError:
+            except FileNotFoundError:
                 self._last_error = "ffmpeg is not available on the system"
+                return {"started": False, "filename": "", "error": self._last_error}
+            except OSError:
+                self._last_error = "failed to start ffmpeg"
                 return {"started": False, "filename": "", "error": self._last_error}
             self._current_filename = filename
             self._last_error = ""
@@ -71,7 +74,11 @@ class RecorderController:
                 process.wait(timeout=10)
             except subprocess.TimeoutExpired:
                 process.terminate()
-                process.wait(timeout=5)
+                try:
+                    process.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    process.kill()
+                    process.wait(timeout=2)
 
             self._process = None
             self._current_filename = None

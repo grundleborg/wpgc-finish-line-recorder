@@ -68,6 +68,15 @@ class AppTests(unittest.TestCase):
         self.assertEqual(payload["recordings"][0]["name"], "recording-2.mkv")
         self.assertEqual(payload["recordings"][1]["name"], "recording-1.mkv")
 
+    def test_download_recording(self) -> None:
+        target = Path(self.tmpdir.name) / "recording-1.mkv"
+        target.write_bytes(b"abc")
+
+        response = self.client.get("/api/recordings/recording-1.mkv")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data, b"abc")
+        response.close()
+
 
 if __name__ == "__main__":
     unittest.main()
