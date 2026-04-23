@@ -1,0 +1,10 @@
+[Unit]
+Description=Automount USB drive for WPGC recordings
+Documentation=man:systemd.automount(5)
+
+[Automount]
+Where=/var/lib/wpgc-recordings
+TimeoutIdleSec=30
+
+[Install]
+WantedBy=multi-user.target

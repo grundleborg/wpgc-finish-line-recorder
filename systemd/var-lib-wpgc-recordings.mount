@@ -1,0 +1,14 @@
+[Unit]
+Description=USB drive mount for WPGC recordings
+Documentation=man:systemd.mount(5)
+BindsTo=dev-disk-by\x2dlabel-WPGC_RECORDINGS.device
+After=dev-disk-by\x2dlabel-WPGC_RECORDINGS.device
+
+[Mount]
+What=/dev/disk/by-label/WPGC_RECORDINGS
+Where=/var/lib/wpgc-recordings
+Type=ext4
+Options=rw,nofail,noatime
+
+[Install]
+WantedBy=multi-user.target
