@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WPGC Finish Line Recorder</title>
+  <style>
+    body { font-family: sans-serif; margin: 24px; max-width: 1000px; }
+    .row { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; }
+    button { padding: 10px 16px; }
+    .badge { padding: 6px 10px; border-radius: 6px; color: #fff; font-weight: 600; }
+    .recording { background: #c92a2a; }
+    .idle { background: #2f9e44; }
+    img { width: 100%; max-width: 800px; border: 1px solid #ddd; }
+    ul { padding-left: 20px; }
+  </style>
+</head>
+<body>
+  <h1>WPGC Finish Line Recorder</h1>
+
+  <div class="row">
+    <button id="start">Start Recording</button>
+    <button id="stop">Stop Recording</button>
+    <span id="status" class="badge idle">Idle</span>
+    <span id="file"></span>
+  </div>
+  <div class="row">
+    <strong id="error"></strong>
+  </div>
+
+  <h2>Live Preview</h2>
+  <img src="/preview.mjpg" alt="Live camera preview">
+
+  <h2>Recordings</h2>
+  <ul id="recordings"></ul>
+
+  <script>
+    async function updateStatus() {
+      const response = await fetch('/api/status');
+      const data = await response.json();
+      const status = document.getElementById('status');
+      const file = document.getElementById('file');
+      const error = document.getElementById('error');
+      if (data.recording) {
+        status.textContent = 'Recording';
+        status.className = 'badge recording';
+      } else {
+        status.textContent = 'Idle';
+        status.className = 'badge idle';
+      }
+      file.textContent = data.filename ? `File: ${data.filename}` : '';
+      error.textContent = data.error ? `Error: ${data.error}` : '';
+    }
+
+    async function updateRecordings() {
+      const response = await fetch('/api/recordings');
+      const data = await response.json();
+      const list = document.getElementById('recordings');
+      list.innerHTML = '';
+      data.recordings.forEach((recording) => {
+        const li = document.createElement('li');
+        const link = document.createElement('a');
+        link.href = `/api/recordings/${encodeURIComponent(recording.name)}`;
+        link.textContent = `${recording.name} (${Math.round(recording.size / 1024)} KB)`;
+        li.appendChild(link);
+        list.appendChild(li);
+      });
+    }
+
+    async function callApi(path) {
+      await fetch(path, { method: 'POST' });
+      await Promise.all([updateStatus(), updateRecordings()]);
+    }
+
+    document.getElementById('start').addEventListener('click', () => callApi('/api/start'));
+    document.getElementById('stop').addEventListener('click', () => callApi('/api/stop'));
+
+    setInterval(updateStatus, 2000);
+    setInterval(updateRecordings, 5000);
+    Promise.all([updateStatus(), updateRecordings()]);
+  </script>
+</body>
+</html>

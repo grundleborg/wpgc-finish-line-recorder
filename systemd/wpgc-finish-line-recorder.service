@@ -1,0 +1,17 @@
+[Unit]
+Description=WPGC Finish Line Recorder
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/opt/wpgc-finish-line-recorder
+Environment=CAMERA_URL=rtsp://10.20.30.11
+Environment=RECORDINGS_DIR=/var/lib/wpgc-recordings
+ExecStart=/usr/bin/python3 /opt/wpgc-finish-line-recorder/app.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
