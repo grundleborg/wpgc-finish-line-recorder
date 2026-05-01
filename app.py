@@ -50,6 +50,8 @@ class RecorderController:
                 "0",
                 "-c",
                 "copy",
+                "-bsf:a",
+                "aac_adtstoasc",
                 "-f",
                 "matroska",
                 str(output_path),

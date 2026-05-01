@@ -9,7 +9,7 @@ Lightweight Raspberry Pi-friendly RTSP recorder for the WPGC finish line camera.
 - Recording state API (`/api/status`)
 - Recording list/download API (`/api/recordings`)
 - Live preview in the UI (`/preview.mjpg`)
-- Recording with stream copy (`ffmpeg -c copy`) to avoid transcoding recorded output
+- Recording of all streams (video and audio) with stream copy (`ffmpeg -map 0 -c copy`) to avoid transcoding recorded output
 
 ## Requirements
 
