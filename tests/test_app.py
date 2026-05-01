@@ -64,6 +64,8 @@ class AppTests(unittest.TestCase):
         cmd = args[0]
         self.assertIn("-map", cmd)
         self.assertEqual(cmd[cmd.index("-map") + 1], "0")
+        self.assertIn("-bsf:a", cmd)
+        self.assertEqual(cmd[cmd.index("-bsf:a") + 1], "aac_adtstoasc")
 
     @patch("subprocess.Popen", side_effect=FileNotFoundError("ffmpeg not found"))
     def test_start_handles_missing_ffmpeg(self, _popen) -> None:
