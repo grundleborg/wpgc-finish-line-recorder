@@ -57,6 +57,14 @@ class AppTests(unittest.TestCase):
         self.assertTrue(payload["started"])
         self.assertIn("-Heat-1.mkv", payload["filename"])
 
+    @patch("subprocess.Popen", return_value=DummyProcess())
+    def test_start_uses_map_flag_for_all_streams(self, mock_popen) -> None:
+        self.client.post("/api/start")
+        args, _ = mock_popen.call_args
+        cmd = args[0]
+        self.assertIn("-map", cmd)
+        self.assertEqual(cmd[cmd.index("-map") + 1], "0")
+
     @patch("subprocess.Popen", side_effect=FileNotFoundError("ffmpeg not found"))
     def test_start_handles_missing_ffmpeg(self, _popen) -> None:
         response = self.client.post("/api/start")
